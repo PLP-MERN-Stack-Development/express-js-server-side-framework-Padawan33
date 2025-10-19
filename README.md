@@ -1,62 +1,167 @@
-# Express.js RESTful API Assignment
+# RESTful Product API with Express.js (Week 2 Assignment)
 
-This assignment focuses on building a RESTful API using Express.js, implementing proper routing, middleware, and error handling.
+This project implements a comprehensive RESTful API for managing a product catalog. It is built using Node.js and the Express.js framework, featuring custom middleware for logging, authentication, and validation, as well as robust error handling and advanced querying features like filtering, searching, and pagination.
 
-## Assignment Overview
+## 🚀 Getting Started
 
-You will:
-1. Set up an Express.js server
-2. Create RESTful API routes for a product resource
-3. Implement custom middleware for logging, authentication, and validation
-4. Add comprehensive error handling
-5. Develop advanced features like filtering, pagination, and search
+Follow these steps to set up and run the server locally.
 
-## Getting Started
+### Prerequisites
 
-1. Accept the GitHub Classroom assignment invitation
-2. Clone your personal repository that was created by GitHub Classroom
-3. Install dependencies:
-   ```
-   npm install
-   ```
-4. Run the server:
-   ```
-   npm start
-   ```
+* Node.js (v18 or higher)
+* npm (Node Package Manager)
 
-## Files Included
+### Installation
 
-- `Week2-Assignment.md`: Detailed assignment instructions
-- `server.js`: Starter Express.js server file
-- `.env.example`: Example environment variables file
+1.  Clone the repository:
+    ```bash
+    git clone [YOUR_REPO_URL]
+    cd express-js-server-side-framework-[YOUR_USERNAME]
+    ```
 
-## Requirements
+2.  Install the required dependencies:
+    ```bash
+    npm install
+    ```
 
-- Node.js (v18 or higher)
-- npm or yarn
-- Postman, Insomnia, or curl for API testing
+### Environment Setup
 
-## API Endpoints
+This API uses an API Key for authentication on data-modifying routes (`POST`, `PUT`, `DELETE`).
 
-The API will have the following endpoints:
+1.  Create a file named **`.env`** in the root directory.
+2.  Copy the variable from the provided `.env.example` file and set a secret value:
 
-- `GET /api/products`: Get all products
-- `GET /api/products/:id`: Get a specific product
-- `POST /api/products`: Create a new product
-- `PUT /api/products/:id`: Update a product
-- `DELETE /api/products/:id`: Delete a product
+    **.env**
+    ```
+    API_KEY=my_secret_production_key_12345
+    ```
 
-## Submission
+### Running the Server
 
-Your work will be automatically submitted when you push to your GitHub Classroom repository. Make sure to:
+Start the application using the defined `start` script:
 
-1. Complete all the required API endpoints
-2. Implement the middleware and error handling
-3. Document your API in the README.md
-4. Include examples of requests and responses
+```bash
+npm start
 
-## Resources
+The server will run on **http://localhost:3000**.
 
-- [Express.js Documentation](https://expressjs.com/)
-- [RESTful API Design Best Practices](https://restfulapi.net/)
-- [HTTP Status Codes](https://developer.mozilla.org/en-US/docs/Web/HTTP/Status) 
+---
+
+## 📊 API Endpoints Documentation
+
+**[Heading 1: API Endpoints Documentation]**
+
+The base URL for all product resources is `/api/products`.
+
+| Method | Endpoint | Description | Auth Required |
+| :--- | :--- | :--- | :--- |
+| **GET** | `/api/products` | Get all products. Supports filtering, searching, and pagination. | No |
+| **GET** | `/api/products/:id` | Get a specific product by ID. | No |
+| **POST** | `/api/products` | Create a new product. **Validated** fields: `name`, `description`, `price`, `category`. | **Yes** |
+| **PUT** | `/api/products/:id` | Update an existing product. **Validated** fields: `name`, `description`, `price`, `category`. | **Yes** |
+| **DELETE** | `/api/products/:id` | Delete a product by ID. | **Yes** |
+| **GET** | `/api/products/stats` | Get product count grouped by category. | No |
+
+### Advanced Query Parameters (GET /api/products)
+**[Heading 2: Advanced Query Parameters]**
+
+| Parameter | Type | Description | Example |
+| :--- | :--- | :--- | :--- |
+| `category` | String | Filters products by category (case-insensitive). | `?category=electronics` |
+| `search` | String | Searches products where the name contains the query string (case-insensitive). | `?search=phone` |
+| `limit` | Number | Sets the number of results per page (Default: 10). | `?limit=5` |
+| `page` | Number | Sets the page number for results (Default: 1). | `?page=2` |
+
+---
+
+## 💡 Examples of Requests and Responses
+
+
+### 1. Successful Product Creation (POST)
+**[Successful Product Creation (POST)]**
+
+Demonstrates successful authentication and validation, resulting in a **201 Created**.
+
+**Request:** `POST http://localhost:3000/api/products`
+
+**Headers:**
+* `x-api-key`: `my_secret_production_key_12345`
+* `Content-Type`: `application/json`
+
+**Body (JSON):**
+```json
+{
+    "name": "E-Book Reader",
+    "description": "Latest generation digital reader",
+    "price": 129.99,
+    "category": "electronics",
+    "inStock": true
+}
+
+Response (201 Created):
+
+{
+    "id": "e45b4c1a-7b3b-4c5a-9d2c-1a2b3c4d5e6f",
+    "name": "E-Book Reader",
+    "description": "Latest generation digital reader",
+    "price": 129.99,
+    "category": "electronics",
+    "inStock": true
+}
+
+### 2. Authentication Failure
+
+Demonstrates the custom authentication middleware blocking a request when the API key is missing or incorrect.
+
+**Request:** `DELETE http://localhost:3000/api/products/1`
+Headers: (Missing x-api-key header)
+
+Response (401 Unauthorized):
+
+{
+    "success": false,
+    "status": 401,
+    "message": "Access Denied. Invalid or missing API key.",
+    "hint": "Use the x-api-key header."
+}
+
+### 3. Validation Failure (POST)
+
+Demonstrates the validation middleware catching a missing required field.
+
+Request: POST http://localhost:3000/api/products (With correct x-api-key, but missing price)
+
+Response (400 Bad Request):
+
+{
+    "success": false,
+    "status": 400,
+    "message": "Validation Error: Missing required fields.",
+    "missing": ["price"]
+}
+
+### 4. Combined Advanced Query (GET)
+
+Demonstrates filtering, searching, and pagination applied simultaneously.
+
+Request: GET http://localhost:3000/api/products?category=electronics&search=reader&limit=1&page=1
+
+Response (200 OK):
+
+{
+    "totalProducts": 1,
+    "totalPages": 1,
+    "currentPage": 1,
+    "pageSize": 1,
+    "products": [
+        {
+            "id": "e45b4c1a-7b3b-4c5a-9d2c-1a2b3c4d5e6f",
+            "name": "E-Book Reader",
+            "description": "Latest generation digital reader",
+            "price": 129.99,
+            "category": "electronics",
+            "inStock": true
+        }
+    ]
+}
+
